@@ -38,32 +38,28 @@ app.get('/api/playbooks', (req, res) => {
 // Endpoint to run a playbook
 app.post('/api/playbooks/run', (req, res) => {
     const { playbook, extraVars, limit } = req.body;
-    const playbookPath = path.join(req.app.locals.settings.playbookDirectory, playbook);
-    const cmd = `ansible-playbook ${playbookPath} ${extraVars ? `-e '${JSON.stringify(extraVars)}'` : ''} ${limit ? `-l ${limit}` : ''}`;
+    const playbookDir = app.locals.settings.playbookDirectory;
+    const playbookPath = path.join(playbookDir, playbook);
 
-    // const process = childProcess.exec(cmd, (err, stdout, stderr) => {
-    //     if (err) {
-    //       return res.status(500).send(`Error executing playbook: ${stderr}`);
-    //     }
-    //     res.json(`Playbook executed successfully: ${stdout}`);
-    //   });
+    // Create the command string
+    let cmd = `ansible-playbook "${playbookPath}"`;
+    if (extraVars) {
+        const extraVarsString = JSON.stringify(extraVars);
+        cmd += ` -e '${extraVarsString}'`;
+    }
+    if (limit) {
+        cmd += ` -l ${limit}`;
+    }
 
-    // process.stdout.on('data', (data) => {
-    //     console.log(data);
-    //     // Optionally save this output to a log file
-    // });
-
-    // process.on('close', (code) => {
-    //     res.json({ message: 'Playbook executed', code });
-    // });
-
-    exec(cmd, (err, stdout, stderr) => {
+    // Execute the playbook
+    const process = childProcess.exec(cmd, { cwd: playbookDir }, (err, stdout, stderr) => {
         if (err) {
-          return res.status(500).send(`Error executing playbook: ${stderr}`);
+            console.error('Execution Error:', stderr);
+            return res.status(500).json({ message: 'Error executing playbook', error: stderr });
         }
-        res.send(`Playbook executed successfully: ${stdout}`);
-      });
-
+        // Return both stdout and stderr as part of the success response
+        res.json({ message: 'Playbook executed successfully', output: stdout, errors: stderr });
+    });
 });
 
 // Settings: Save and Retrieve

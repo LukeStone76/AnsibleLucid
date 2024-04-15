@@ -11,22 +11,34 @@ function Home() {
 
   useEffect(() => {
     axios.get('http://localhost:3001/api/playbooks')
-      .then(response => setPlaybooks(response.data))
+      .then(response => {
+        setPlaybooks(response.data);
+        if (!selectedPlaybook && response.data.length > 0) {
+          setSelectedPlaybook(response.data[0]); // Automatically select the first playbook
+        }
+      })
       .catch(error => console.error('Error fetching playbooks:', error));
   }, []);
+  
 
   const runPlaybook = () => {
     axios.post('http://localhost:3001/api/playbooks/run', { playbook: selectedPlaybook, extraVars, limit })
-      .then(response => setLogs(response.data))
-      .catch(error => setLogs('Error running playbook:', error));
+        .then(response => {
+            setLogs(`${response.data.output}\n${response.data.errors}`);
+        })
+        .catch(error => {
+            const errorMessage = error.response ? error.response.data.message : error.message;
+            setLogs(`Error running playbook: ${errorMessage}`);
+        });
   };
+
 
   return (
     <div>
       <h1>Available Playbooks</h1>
       <select onChange={e => setSelectedPlaybook(e.target.value)} value={selectedPlaybook}>
-        {playbooks.map(playbook => (
-          <option key={playbook} value={playbook}>{playbook}</option>
+      {playbooks.map(playbook => (
+        <option key={playbook} value={playbook}>{playbook}</option>
         ))}
       </select>
       <div>
