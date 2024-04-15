@@ -25,7 +25,7 @@ function Home() {
         const { extraVars, limit } = params[playbook];
         axios.post('http://localhost:3001/api/playbooks/run', { playbook, extraVars, limit })
             .then(response => {
-                setLogs(`Output for ${playbook}: ${response.data.output}\nErrors: ${response.data.errors}`);
+                setLogs(`Output for ${playbook}:\n\n${response.data.output}\nErrors: ${response.data.errors}`);
             })
             .catch(error => {
                 const errorMessage = error.response ? error.response.data.message : error.message;

@@ -9,7 +9,7 @@ const PORT = process.env.PORT || 3001;
 
 app.use(cors()); // Use CORS middleware to allow all origins
 app.use(bodyParser.json());
-app.use(express.static(path.join(__dirname, 'build')));
+app.use(express.static(path.join(__dirname, '../build')));
 
 const settingsPath = process.env.SETTINGS_PATH || 'settings.json';
 
@@ -41,7 +41,11 @@ app.post('/api/playbooks/run', (req, res) => {
     const playbookDir = app.locals.settings.playbookDirectory;
     const playbookPath = path.join(playbookDir, playbook);
 
-    // Create the command string
+    // Generate a timestamped log file name
+    const timestamp = new Date().toISOString().replace(/:/g, '-');
+    const logFilename = `${playbook.replace(/\.yml$/, '')}_${timestamp}.log`;
+    const logFilePath = path.join(app.locals.settings.logDirectory, logFilename);
+
     let cmd = `ansible-playbook "${playbookPath}"`;
     if (extraVars) {
         const extraVarsString = JSON.stringify(extraVars);
@@ -51,21 +55,46 @@ app.post('/api/playbooks/run', (req, res) => {
         cmd += ` -l ${limit}`;
     }
 
-    // Execute the playbook
     const process = childProcess.exec(cmd, { cwd: playbookDir }, (err, stdout, stderr) => {
+        // Write the output and errors to a log file
+        const logContent = `STDOUT:\n${stdout}\nSTDERR:\n${stderr}`;
+        fs.writeFile(logFilePath, logContent, writeErr => {
+            if (writeErr) {
+                console.error('Failed to write log file:', writeErr);
+            }
+        });
+
         if (err) {
             console.error('Execution Error:', stderr);
             return res.status(500).json({ message: 'Error executing playbook', error: stderr });
         }
         // Return both stdout and stderr as part of the success response
         res.json({ message: 'Playbook executed successfully', output: stdout, errors: stderr });
+
     });
 });
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 // Settings: Save and Retrieve
 app.post('/api/settings', (req, res) => {
-    req.app.locals.settings = req.body;
-    fs.writeFile('settings.json', JSON.stringify(req.body), err => {
+    // Ensure all expected settings are present
+    const { playbookDirectory, user, logDirectory } = req.body;
+    const settings = { playbookDirectory, user, logDirectory }; // structure the settings
+
+    fs.writeFile('settings.json', JSON.stringify(settings, null, 2), err => {
         if (err) {
             return res.status(500).json({ message: 'Failed to save settings' });
         }
@@ -83,9 +112,38 @@ app.get('/api/settings', (req, res) => {
     });
 });
 
+
+
+
+
+
+app.get('/api/logs', (req, res) => {
+    const logsDir = app.locals.settings.logDirectory; // Use logDirectory from settings
+    fs.readdir(logsDir, (err, files) => {
+        if (err) {
+            res.status(500).json({ message: 'Failed to list logs', error: err.message });
+            return;
+        }
+        const logs = files.map(file => ({
+            name: file,
+            url: `/logs/${file}`
+        }));
+        res.json(logs);
+    });
+});
+
+app.get('/logs/:logFile', (req, res) => {
+    const logsDir = app.locals.settings.logDirectory; // Use logDirectory from settings
+    const logFilePath = path.join(logsDir, req.params.logFile);
+    res.sendFile(logFilePath);
+});
+
+
+
+
 // Serve the React application
 app.get('*', (req, res) => {
-    res.sendFile(path.join(__dirname, 'build', 'index.html'));
+    res.sendFile(path.join(__dirname, '../build', 'index.html'));
 });
 
 app.listen(PORT, () => {

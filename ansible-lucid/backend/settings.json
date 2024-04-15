@@ -1,1 +1,5 @@
-{"playbookDirectory":"/home/luke/projects/AnsibleLucid/ansible-repo","user":"luke"}
+{
+  "playbookDirectory": "/home/luke/projects/AnsibleLucid/ansible-repo",
+  "user": "luke",
+  "logDirectory": "/home/luke/projects/AnsibleLucid/ansible-repo/logs"
+}
