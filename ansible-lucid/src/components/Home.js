@@ -6,7 +6,8 @@ function Home() {
   const [selectedPlaybook, setSelectedPlaybook] = useState('');
   const [extraVars, setExtraVars] = useState('');
   const [limit, setLimit] = useState('');
-  const [output, setOutput] = useState('');
+  const [logs, setLogs] = useState('');
+
 
   useEffect(() => {
     axios.get('http://localhost:3001/api/playbooks')
@@ -16,8 +17,8 @@ function Home() {
 
   const runPlaybook = () => {
     axios.post('http://localhost:3001/api/playbooks/run', { playbook: selectedPlaybook, extraVars, limit })
-      .then(response => setOutput(response.data.message))
-      .catch(error => console.error('Error running playbook:', error));
+      .then(response => setLogs(response.data))
+      .catch(error => setLogs('Error running playbook:', error));
   };
 
   return (
@@ -41,9 +42,8 @@ function Home() {
         </label>
       </div>
       <button onClick={runPlaybook}>Run Playbook</button>
-      <div>
-        <h2>Output:</h2>
-        <pre>{output}</pre>
+      <div className="form-group">
+        <textarea className="logs" value={logs} readOnly placeholder="Execution logs will appear here..." rows="10"></textarea>
       </div>
     </div>
   );

@@ -41,16 +41,29 @@ app.post('/api/playbooks/run', (req, res) => {
     const playbookPath = path.join(req.app.locals.settings.playbookDirectory, playbook);
     const cmd = `ansible-playbook ${playbookPath} ${extraVars ? `-e '${JSON.stringify(extraVars)}'` : ''} ${limit ? `-l ${limit}` : ''}`;
 
-    const process = childProcess.exec(cmd, { cwd: req.app.locals.settings.playbookDirectory, user: req.app.locals.settings.user });
+    // const process = childProcess.exec(cmd, (err, stdout, stderr) => {
+    //     if (err) {
+    //       return res.status(500).send(`Error executing playbook: ${stderr}`);
+    //     }
+    //     res.json(`Playbook executed successfully: ${stdout}`);
+    //   });
 
-    process.stdout.on('data', (data) => {
-        console.log(data);
-        // Optionally save this output to a log file
-    });
+    // process.stdout.on('data', (data) => {
+    //     console.log(data);
+    //     // Optionally save this output to a log file
+    // });
 
-    process.on('close', (code) => {
-        res.json({ message: 'Playbook executed', code });
-    });
+    // process.on('close', (code) => {
+    //     res.json({ message: 'Playbook executed', code });
+    // });
+
+    exec(cmd, (err, stdout, stderr) => {
+        if (err) {
+          return res.status(500).send(`Error executing playbook: ${stderr}`);
+        }
+        res.send(`Playbook executed successfully: ${stdout}`);
+      });
+
 });
 
 // Settings: Save and Retrieve
