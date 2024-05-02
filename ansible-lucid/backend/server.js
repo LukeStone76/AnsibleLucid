@@ -141,6 +141,46 @@ app.get('/logs/:logFile', (req, res) => {
 
 
 
+
+
+
+
+// Endpoint to read the inventory file
+app.get('/api/inventory', (req, res) => {
+    const playbookDir = app.locals.settings.playbookDirectory;
+    const inventoryFilePath = path.join(playbookDir, 'inventory');
+
+    fs.readFile(inventoryFilePath, 'utf8', (err, data) => {
+        if (err) {
+            return res.status(500).json({ message: 'Failed to read inventory file', error: err.message });
+        }
+        res.json({ inventory: data.split('\n') });
+    });
+});
+
+// Endpoint to update the inventory file
+app.post('/api/inventory', (req, res) => {
+    const { lines } = req.body;
+    const playbookDir = app.locals.settings.playbookDirectory;
+    const inventoryFilePath = path.join(playbookDir, 'inventory');
+
+    // Join the lines back together and write to the file
+    fs.writeFile(inventoryFilePath, lines.join('\n'), 'utf8', err => {
+        if (err) {
+            return res.status(500).json({ message: 'Failed to write inventory file', error: err.message });
+        }
+        res.json({ message: 'Inventory updated successfully' });
+    });
+});
+
+
+
+
+
+
+
+
+
 // Serve the React application
 app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../build', 'index.html'));
