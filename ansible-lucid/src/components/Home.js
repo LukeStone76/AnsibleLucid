@@ -1,5 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import {
+    Button,
+    Table,
+    TableBody,
+    TableCell,
+    TableContainer,
+    TableHead,
+    TableRow,
+    TextField,
+    Paper,
+    Typography,
+    Box
+} from '@mui/material';
 
 function Home() {
     const [playbooks, setPlaybooks] = useState([]);
@@ -48,59 +61,67 @@ function Home() {
     );
 
     return (
-        <div>
-            <h1>Available Playbooks</h1>
-            <input
-                type="text"
-                placeholder="Search playbooks..."
+        <Box sx={{ padding: 2 }}>
+            <Typography variant="h4">Available Playbooks</Typography>
+            <TextField
+                label="Search playbooks..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
+                fullWidth
+                margin="normal"
             />
-            <table>
-                <thead>
-                    <tr>
-                        <th>Playbook</th>
-                        <th>Extra Variables</th>
-                        <th>Limit Hosts</th>
-                        <th>Action</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {filteredPlaybooks.map(playbook => (
-                        <tr key={playbook}>
-                            <td>{playbook}</td>
-                            <td>
-                                <input
-                                    type="text"
-                                    value={params[playbook]?.extraVars || ''}
-                                    onChange={e => handleParamChange(playbook, 'extraVars', e.target.value)}
-                                />
-                            </td>
-                            <td>
-                                <input
-                                    type="text"
-                                    value={params[playbook]?.limit || ''}
-                                    onChange={e => handleParamChange(playbook, 'limit', e.target.value)}
-                                />
-                            </td>
-                            <td>
-                                <button onClick={() => runPlaybook(playbook)}>Run</button>
-                            </td>
-                        </tr>
-                    ))}
-                </tbody>
-            </table>
-            <div className="form-group">
-                <textarea
-                    className="logs"
+            <TableContainer component={Paper}>
+                <Table>
+                    <TableHead>
+                        <TableRow>
+                            <TableCell>Playbook</TableCell>
+                            <TableCell>Extra Variables</TableCell>
+                            <TableCell>Limit Hosts</TableCell>
+                            <TableCell>Action</TableCell>
+                        </TableRow>
+                    </TableHead>
+                    <TableBody>
+                        {filteredPlaybooks.map(playbook => (
+                            <TableRow key={playbook}>
+                                <TableCell>{playbook}</TableCell>
+                                <TableCell>
+                                    <TextField
+                                        value={params[playbook]?.extraVars || ''}
+                                        onChange={e => handleParamChange(playbook, 'extraVars', e.target.value)}
+                                        fullWidth
+                                        margin="dense"
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <TextField
+                                        value={params[playbook]?.limit || ''}
+                                        onChange={e => handleParamChange(playbook, 'limit', e.target.value)}
+                                        fullWidth
+                                        margin="dense"
+                                    />
+                                </TableCell>
+                                <TableCell>
+                                    <Button variant="contained" color="primary" onClick={() => runPlaybook(playbook)}>
+                                        Run
+                                    </Button>
+                                </TableCell>
+                            </TableRow>
+                        ))}
+                    </TableBody>
+                </Table>
+            </TableContainer>
+            <Box>
+                <TextField
+                    label="Execution logs will appear here..."
                     value={logs}
                     readOnly
-                    placeholder="Execution logs will appear here..."
-                    rows="10"
-                    style={{ width: '100%' }}
+                    multiline
+                    rows={10}
+                    fullWidth
+                    margin="normal"
                 />
-            </div>
-        </div>
+            </Box>
+        </Box>
     );
 }
 

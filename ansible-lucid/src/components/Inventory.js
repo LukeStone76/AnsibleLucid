@@ -1,5 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import {
+    Button,
+    TextField,
+    List,
+    ListItem,
+    ListItemText,
+    IconButton,
+    Typography,
+    Box
+} from '@mui/material';
+import DeleteIcon from '@mui/icons-material/Delete';
 
 function Inventory() {
     const [lines, setLines] = useState([]);
@@ -14,8 +25,10 @@ function Inventory() {
     }, []);
 
     const addLine = () => {
-        setLines([...lines, newLine]);
-        setNewLine('');
+        if (newLine.trim() !== '') {
+            setLines([...lines, newLine]);
+            setNewLine('');
+        }
     };
 
     const deleteLine = (index) => {
@@ -30,25 +43,39 @@ function Inventory() {
     };
 
     return (
-        <div>
-            <h1>Inventory</h1>
-            <ul>
+        <Box sx={{ padding: 2 }}>
+            <Typography variant="h4" gutterBottom>Inventory</Typography>
+            <List>
                 {lines.map((line, index) => (
-                    <li key={index}>
-                        {line}
-                        <button onClick={() => deleteLine(index)}>Delete</button>
-                    </li>
+                    <ListItem key={index} secondaryAction={
+                        <IconButton edge="end" aria-label="delete" onClick={() => deleteLine(index)}>
+                            <DeleteIcon />
+                        </IconButton>
+                    }>
+                        <ListItemText primary={line} />
+                    </ListItem>
                 ))}
-            </ul>
-            <input
-                type="text"
-                value={newLine}
-                onChange={(e) => setNewLine(e.target.value)}
-                placeholder="Add a new line"
-            />
-            <button onClick={addLine}>Add Line</button>
-            <button onClick={saveInventory}>Save Inventory</button>
-        </div>
+            </List>
+            <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
+                <TextField
+                    label="Add a new line"
+                    value={newLine}
+                    onChange={(e) => setNewLine(e.target.value)}
+                    fullWidth
+                />
+                <Button variant="contained" color="primary" onClick={addLine}>
+                    Add Line
+                </Button>
+            </Box>
+            <Button
+                variant="contained"
+                color="success"
+                onClick={saveInventory}
+                sx={{ marginTop: 2 }}
+            >
+                Save Inventory
+            </Button>
+        </Box>
     );
 }
 

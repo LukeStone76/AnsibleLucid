@@ -1,5 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
+import {
+    TextField,
+    List,
+    ListItem,
+    ListItemText,
+    Typography,
+    Box
+} from '@mui/material';
 
 function Logs() {
     const [logs, setLogs] = useState([]);
@@ -14,29 +22,34 @@ function Logs() {
     }, []);
 
     // Filter logs based on the search term
-    const filteredLogs = logs.filter(log => 
+    const filteredLogs = logs.filter(log =>
         log.name.toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
-        <div>
-            <h1>Job Logs</h1>
-            <input
-                type="text"
-                placeholder="Search logs..."
+        <Box sx={{ padding: 2 }}>
+            <Typography variant="h4" gutterBottom>Job Logs</Typography>
+            <TextField
+                label="Search logs"
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
+                fullWidth
+                margin="normal"
             />
-            <ul>
+            <List>
                 {filteredLogs.map(log => (
-                    <li key={log.name}>
-                        <a href={`http://localhost:3001/logs/${log.name}`} target="_blank" rel="noopener noreferrer">
-                            {log.name}
-                        </a>
-                    </li>
+                    <ListItem
+                        key={log.name}
+                        component="a"
+                        href={`http://localhost:3001/logs/${log.name}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                    >
+                        <ListItemText primary={log.name} />
+                    </ListItem>
                 ))}
-            </ul>
-        </div>
+            </List>
+        </Box>
     );
 }
 
