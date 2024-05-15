@@ -107,6 +107,25 @@ const theme = createTheme({
           },
         },
       },
+
+    // Lists
+    MuiList: {
+      styleOverrides: {
+        root: {
+          backgroundColor: '#ffffff', // Custom background color for lists
+          borderRadius: '4px', // Rounded corners for the list container
+          border: '1px solid #ddd', // Border around the list
+          padding: '8px', // Padding around the list
+          margin: '8px 0', // Margin around the list
+        },
+        padding: {
+          padding: '0', // Remove default padding from list items if needed
+        },
+      },
+    },
+
+
+
     },
 });
 
