@@ -6,10 +6,59 @@ const fs = require('fs');
 const cors = require('cors'); // Require CORS middleware
 const app = express();
 const PORT = process.env.PORT || 3001;
+const bcrypt = require('bcryptjs');
+const sqlite3 = require('sqlite3').verbose();
+
 
 app.use(cors()); // Use CORS middleware to allow all origins
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../build')));
+app.use(express.json()); // for parsing application/json
+
+
+
+
+
+const db = new sqlite3.Database('./users.db', (err) => {
+    if (err) {
+        console.error('Error opening database ' + err.message);
+    } else {
+        db.run('CREATE TABLE users( \
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \
+            username TEXT UNIQUE NOT NULL, \
+            password TEXT NOT NULL \
+        )', (err) => {
+            if (err) {
+                console.log("Table already exists.");
+            } else {
+                console.log("Table just created.");
+                // Create a default admin user
+                const hash = bcrypt.hashSync("admin", 10);
+                db.run(`INSERT INTO users (username, password) VALUES (?, ?)`, ["admin", hash]);
+            }
+        });
+    }
+});
+
+app.post('/login', (req, res) => {
+    const { username, password } = req.body;
+    if (!username || !password) {
+        return res.status(400).send("Username and password are required.");
+    }
+    db.get(`SELECT * FROM users WHERE username = ?`, [username], (err, user) => {
+        if (err) {
+            res.status(500).send("Error fetching user from database.");
+        } else if (!user) {
+            res.status(404).send("User not found.");
+        } else if (bcrypt.compareSync(password, user.password)) {
+            res.send("Login successful!");
+        } else {
+            res.status(403).send("Incorrect password.");
+        }
+    });
+});
+
+
 
 const settingsPath = process.env.SETTINGS_PATH || 'settings.json';
 
