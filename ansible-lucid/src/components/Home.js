@@ -13,8 +13,10 @@ import {
     Typography,
     Box
 } from '@mui/material';
+import { useAuth } from '../context/AuthContext';
 
 function Home() {
+    const { user } = useAuth();
     const [playbooks, setPlaybooks] = useState([]);
     const [params, setParams] = useState({});
     const [searchTerm, setSearchTerm] = useState('');
@@ -24,7 +26,6 @@ function Home() {
         axios.get('http://localhost:3001/api/playbooks')
             .then(response => {
                 setPlaybooks(response.data);
-                // Initialize extraVars and limit for each playbook
                 const initialParams = response.data.reduce((acc, playbook) => {
                     acc[playbook] = { extraVars: '', limit: '' };
                     return acc;
@@ -36,7 +37,7 @@ function Home() {
 
     const runPlaybook = (playbook) => {
         const { extraVars, limit } = params[playbook];
-        axios.post('http://localhost:3001/api/playbooks/run', { playbook, extraVars, limit })
+        axios.post('http://localhost:3001/api/playbooks/run', { username: user.username, playbook, extraVars, limit })
             .then(response => {
                 setLogs(`Output for ${playbook}:\n\n${response.data.output}\nErrors: ${response.data.errors}`);
             })

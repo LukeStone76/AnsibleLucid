@@ -69,7 +69,7 @@ function Inventory() {
             </Box>
             <Button
                 variant="contained"
-                color="success"
+                color="primary"
                 onClick={saveInventory}
                 sx={{ marginTop: 2 }}
             >

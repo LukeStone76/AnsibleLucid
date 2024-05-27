@@ -7,15 +7,15 @@ import { Button, TextField, Box, Typography } from '@mui/material';
 function Login() {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
-    const { login } = useAuth(); // Get login function from AuthContext
-    const navigate = useNavigate(); // Hook from react-router-dom for navigation
+    const { login } = useAuth();
+    const navigate = useNavigate();
 
     const handleLogin = async () => {
         try {
             const response = await axios.post('http://localhost:3000/login', { username, password });
-            if (response.data === 'Login successful!') {
-                login(username); // Update the authentication state
-                navigate('/'); // Navigate to the homepage or another protected route
+            if (response.data.message === 'Login successful!') {
+                login(response.data.user);
+                navigate('/');
             } else {
                 alert(response.data);
             }

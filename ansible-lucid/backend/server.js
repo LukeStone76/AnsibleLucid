@@ -9,37 +9,81 @@ const PORT = process.env.PORT || 3001;
 const bcrypt = require('bcryptjs');
 const sqlite3 = require('sqlite3').verbose();
 
-
 app.use(cors()); // Use CORS middleware to allow all origins
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../build')));
 app.use(express.json()); // for parsing application/json
 
-
-
-
-
 const db = new sqlite3.Database('./users.db', (err) => {
     if (err) {
         console.error('Error opening database ' + err.message);
     } else {
-        db.run('CREATE TABLE users( \
-            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, \
-            username TEXT UNIQUE NOT NULL, \
-            password TEXT NOT NULL \
-        )', (err) => {
+        db.run(`CREATE TABLE users(
+            id INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL,
+            username TEXT UNIQUE NOT NULL,
+            password TEXT NOT NULL,
+            admin BOOLEAN NOT NULL DEFAULT 0
+        )`, (err) => {
             if (err) {
                 console.log("Table already exists.");
             } else {
                 console.log("Table just created.");
                 // Create a default admin user
                 const hash = bcrypt.hashSync("admin", 10);
-                db.run(`INSERT INTO users (username, password) VALUES (?, ?)`, ["admin", hash]);
+                db.run(`INSERT INTO users (username, password, admin) VALUES (?, ?, ?)`, ["admin", hash, 1]);
             }
         });
     }
 });
 
+// Middleware to check if the user is admin
+function checkAdmin(req, res, next) {
+    const username = req.body.username;
+    db.get('SELECT admin FROM users WHERE username = ?', [username], (err, user) => {
+        if (err) {
+            res.status(500).send('Error fetching user from database.');
+        } else if (!user || user.admin === 0) {
+            res.status(403).send('Forbidden');
+        } else {
+            next();
+        }
+    });
+}
+
+// Endpoint to list all users
+app.get('/api/users', (req, res) => {
+    db.all('SELECT id, username, admin FROM users', [], (err, rows) => {
+        if (err) {
+            return res.status(500).send('Error retrieving users');
+        }
+        res.json(rows);
+    });
+});
+
+// Endpoint to add a new user
+app.post('/api/add-user', checkAdmin, (req, res) => {
+    const { newUsername, newPassword, newAdmin } = req.body;
+    const hash = bcrypt.hashSync(newPassword, 10);
+    db.run('INSERT INTO users (username, password, admin) VALUES (?, ?, ?)', [newUsername, hash, newAdmin ? 1 : 0], function (err) {
+        if (err) {
+            return res.status(500).send('Error adding user');
+        }
+        res.send('User added successfully');
+    });
+});
+
+// Endpoint to remove a user
+app.post('/api/remove-user', checkAdmin, (req, res) => {
+    const { removeUsername } = req.body;
+    db.run('DELETE FROM users WHERE username = ?', [removeUsername], function (err) {
+        if (err) {
+            return res.status(500).send('Error removing user');
+        }
+        res.send('User removed successfully');
+    });
+});
+
+// Endpoint to login a user
 app.post('/login', (req, res) => {
     const { username, password } = req.body;
     if (!username || !password) {
@@ -51,14 +95,18 @@ app.post('/login', (req, res) => {
         } else if (!user) {
             res.status(404).send("User not found.");
         } else if (bcrypt.compareSync(password, user.password)) {
-            res.send("Login successful!");
+            res.send({
+                message: "Login successful!",
+                user: {
+                    username: user.username,
+                    admin: user.admin
+                }
+            });
         } else {
             res.status(403).send("Incorrect password.");
         }
     });
 });
-
-
 
 const settingsPath = process.env.SETTINGS_PATH || 'settings.json';
 
@@ -86,13 +134,13 @@ app.get('/api/playbooks', (req, res) => {
 
 // Endpoint to run a playbook
 app.post('/api/playbooks/run', (req, res) => {
-    const { playbook, extraVars, limit } = req.body;
+    const { username, playbook, extraVars, limit } = req.body; // Include username in request body
     const playbookDir = app.locals.settings.playbookDirectory;
     const playbookPath = path.join(playbookDir, playbook);
 
-    // Generate a timestamped log file name
+    // Generate a timestamped log file name with the user's name
     const timestamp = new Date().toISOString().replace(/:/g, '-');
-    const logFilename = `${playbook.replace(/\.yml$/, '')}_${timestamp}.log`;
+    const logFilename = `${username}_${playbook.replace(/\.yml$/, '')}_${timestamp}.log`;
     const logFilePath = path.join(app.locals.settings.logDirectory, logFilename);
 
     let cmd = `ansible-playbook "${playbookPath}"`;
@@ -119,23 +167,8 @@ app.post('/api/playbooks/run', (req, res) => {
         }
         // Return both stdout and stderr as part of the success response
         res.json({ message: 'Playbook executed successfully', output: stdout, errors: stderr });
-
     });
 });
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 // Settings: Save and Retrieve
 app.post('/api/settings', (req, res) => {
@@ -161,11 +194,6 @@ app.get('/api/settings', (req, res) => {
     });
 });
 
-
-
-
-
-
 app.get('/api/logs', (req, res) => {
     const logsDir = app.locals.settings.logDirectory; // Use logDirectory from settings
     fs.readdir(logsDir, (err, files) => {
@@ -186,13 +214,6 @@ app.get('/logs/:logFile', (req, res) => {
     const logFilePath = path.join(logsDir, req.params.logFile);
     res.sendFile(logFilePath);
 });
-
-
-
-
-
-
-
 
 // Endpoint to read the inventory file
 app.get('/api/inventory', (req, res) => {
@@ -221,14 +242,6 @@ app.post('/api/inventory', (req, res) => {
         res.json({ message: 'Inventory updated successfully' });
     });
 });
-
-
-
-
-
-
-
-
 
 // Serve the React application
 app.get('*', (req, res) => {
