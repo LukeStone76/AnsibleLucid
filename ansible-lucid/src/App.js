@@ -6,7 +6,7 @@ import Inventory from './components/Inventory';
 import Settings from './components/Settings';
 import Login from './components/Login';
 import Admin from './components/Admin';
-import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemText, Button } from '@mui/material';
+import { AppBar, Toolbar, Typography, IconButton, Drawer, List, ListItem, ListItemText, Button, Box } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import CloseIcon from '@mui/icons-material/Close';
 import { useAuth } from './context/AuthContext';
@@ -26,18 +26,29 @@ function App() {
           <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleDrawer}>
             <MenuIcon />
           </IconButton>
-          <Typography variant="h6" style={{ flexGrow: 1 }}>
+          <Typography variant="h5" sx={{ fontWeight: 'normal' }} style={{ flexGrow: 1 }}>
             Ansible Dashboard
           </Typography>
           {user ? (
-            <div>
-              <Typography variant="subtitle1" style={{ display: 'inline' }}>
-                {user.username}
-              </Typography>
-              <Button color="inherit" onClick={logout}>Logout</Button>
-            </div>
+              <Button color="inherit" onClick={logout} sx={{ textTransform: 'none',
+                fontSize: '1.125rem',
+                fontWeight: 'normal',
+                lineHeight: 'h6.lineHeight',
+                fontFamily: 'h6.fontFamily',
+                textTransform: 'none'
+              }}>
+                Logout ({user.username})
+              </Button>
           ) : (
-            <Button color="inherit" component={Link} to="/login">Login</Button>
+            <Button color="inherit" onClick={logout} sx={{ textTransform: 'none',
+              fontSize: '1.125rem',
+              fontWeight: 'normal',
+              lineHeight: 'h6.lineHeight',
+              fontFamily: 'h6.fontFamily',
+              textTransform: 'none'
+            }}>
+              Login
+            </Button>
           )}
         </Toolbar>
       </AppBar>
