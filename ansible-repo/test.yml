@@ -1,7 +1,0 @@
-- name: Intro to Ansible Playbooks
-  hosts: localhost
-
-  tasks:
-  - name: Copy file hosts with permissions
-    ansible.builtin.debug:
-      msg: "hello"
