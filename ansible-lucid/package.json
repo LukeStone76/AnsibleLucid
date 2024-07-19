@@ -11,7 +11,7 @@
     "@testing-library/react": "^13.4.0",
     "@testing-library/user-event": "^13.5.0",
     "axios": "^1.6.8",
-    "concurrently": "^8.2.2",
+    "pm2": "^5.4.2",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",
     "react-router-dom": "^6.22.3",
@@ -20,11 +20,19 @@
     "web-vitals": "^2.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject",
-    "dev": "concurrently \"npm start\" \"node backend/server.js\""
+    "install:all": "npm install && cd backend && npm install && cd ..",
+    "build": "npm run build:frontend && npm run build:backend",
+    "build:frontend": "react-scripts build",
+    "build:backend": "cd backend && npm run build",
+    "start": "concurrently \"npm run frontend\" \"npm run backend\"",
+    "frontend": "react-scripts start",
+    "backend": "nodemon backend/server.js",
+    "start:prod": "concurrently \"npm run frontend:prod\" \"npm run backend:prod\"",
+    "frontend:prod": "react-scripts build && npx serve -s build",
+    "backend:prod": "node backend/server.js",
+    "pm2:start": "pm2 start backend/server.js --name ansible-lucid-backend && pm2 start npm --name ansible-lucid-frontend -- run frontend:prod",
+    "pm2:stop": "pm2 stop ansible-lucid-backend && pm2 stop ansible-lucid-frontend",
+    "pm2:restart": "pm2 restart ansible-lucid-backend && pm2 restart ansible-lucid-frontend"
   },
   "eslintConfig": {
     "extends": [
@@ -44,5 +52,10 @@
       "last 1 safari version"
     ]
   },
-  "proxy": "http://localhost:3001"
+  "proxy": "http://localhost:3001",
+  "devDependencies": {
+    "concurrently": "^8.2.2",
+    "nodemon": "^3.1.4",
+    "serve": "^14.0.1"
+  }
 }
