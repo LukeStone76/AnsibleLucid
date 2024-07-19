@@ -11,6 +11,7 @@ const sqlite3 = require('sqlite3').verbose();
 
 const settingsPath = process.env.SETTINGS_PATH || 'settings.json';
 
+// Middleware setup
 app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../build')));
@@ -111,33 +112,43 @@ app.post('/login', (req, res) => {
     });
 });
 
+// Generate default settings if settings.json does not exist
+if (!fs.existsSync(settingsPath)) {
+    const defaultSettings = {
+        playbookDirectory: "/path/to/playbooks",
+        logDirectory: "/path/to/logs",
+        user: "default_user"
+    };
+    fs.writeFileSync(settingsPath, JSON.stringify(defaultSettings, null, 2));
+}
+
 // Read application settings from local file
 fs.readFile(settingsPath, 'utf8', (err, data) => {
-  if (err) {
-      console.error('Error loading settings:', err);
-      process.exit(1);
-  } else {
-      app.locals.settings = JSON.parse(data);
-  }
+    if (err) {
+        console.error('Error loading settings:', err);
+        process.exit(1);
+    } else {
+        app.locals.settings = JSON.parse(data);
+    }
 });
 
 // Endpoint to read playbooks
 app.get('/api/playbooks', (req, res) => {
-  const playbookDir = app.locals.settings.playbookDirectory;
-  console.log("Directory being accessed: ", playbookDir); // This will log the directory path to check it
+    const playbookDir = app.locals.settings.playbookDirectory;
+    console.log("Directory being accessed: ", playbookDir);
 
-  fs.readdir(playbookDir, (err, files) => {
-      if (err) {
-          console.error('Error reading directory:', err); // More detailed logging here
-          return res.status(500).json({ message: 'Failed to list playbooks', error: err.message });
-      }
-      res.json(files.filter(file => file.endsWith('.yml')));
-  });
+    fs.readdir(playbookDir, (err, files) => {
+        if (err) {
+            console.error('Error reading directory:', err);
+            return res.status(500).json({ message: 'Failed to list playbooks', error: err.message });
+        }
+        res.json(files.filter(file => file.endsWith('.yml')));
+    });
 });
 
 // Endpoint to run a playbook
 app.post('/api/playbooks/run', (req, res) => {
-    const { username, playbook, extraVars, limit } = req.body; // Include username in request body
+    const { username, playbook, extraVars, limit } = req.body;
     const playbookDir = app.locals.settings.playbookDirectory;
     const playbookPath = path.join(playbookDir, playbook);
 
@@ -168,39 +179,38 @@ app.post('/api/playbooks/run', (req, res) => {
             console.error('Execution Error:', stderr);
             return res.status(500).json({ message: 'Error executing playbook', error: stderr });
         }
-        // Return both stdout and stderr as part of the success response
         res.json({ message: 'Playbook executed successfully', output: stdout, errors: stderr });
     });
 });
 
 // Endpoint to save application settings
 app.post('/api/settings', (req, res) => {
-    // Ensure all expected settings are present
     const { playbookDirectory, user, logDirectory } = req.body;
-    const settings = { playbookDirectory, user, logDirectory }; // structure the settings
+    const settings = { playbookDirectory, user, logDirectory };
 
-    fs.writeFile('settings.json', JSON.stringify(settings, null, 2), err => {
+    fs.writeFile(settingsPath, JSON.stringify(settings, null, 2), err => {
         if (err) {
             return res.status(500).json({ message: 'Failed to save settings' });
         }
+        app.locals.settings = settings;
         res.json({ message: 'Settings saved' });
     });
 });
 
 // Endpoint to read application settings
 app.get('/api/settings', (req, res) => {
-    fs.readFile('settings.json', (err, data) => {
+    fs.readFile(settingsPath, (err, data) => {
         if (err) {
             return res.status(500).json({ message: 'Failed to read settings' });
         }
-        req.app.locals.settings = JSON.parse(data);
-        res.json(req.app.locals.settings);
+        app.locals.settings = JSON.parse(data);
+        res.json(app.locals.settings);
     });
 });
 
 // Endpoint to read logs
 app.get('/api/logs', (req, res) => {
-    const logsDir = app.locals.settings.logDirectory; // Use logDirectory from settings
+    const logsDir = app.locals.settings.logDirectory;
     fs.readdir(logsDir, (err, files) => {
         if (err) {
             res.status(500).json({ message: 'Failed to list logs', error: err.message });
@@ -216,7 +226,7 @@ app.get('/api/logs', (req, res) => {
 
 // Endpoint to read specific log file
 app.get('/logs/:logFile', (req, res) => {
-    const logsDir = app.locals.settings.logDirectory; // Use logDirectory from settings
+    const logsDir = app.locals.settings.logDirectory;
     const logFilePath = path.join(logsDir, req.params.logFile);
     res.sendFile(logFilePath);
 });
@@ -240,7 +250,6 @@ app.post('/api/inventory', (req, res) => {
     const playbookDir = app.locals.settings.playbookDirectory;
     const inventoryFilePath = path.join(playbookDir, 'inventory');
 
-    // Join the lines back together and write to the file
     fs.writeFile(inventoryFilePath, lines.join('\n'), 'utf8', err => {
         if (err) {
             return res.status(500).json({ message: 'Failed to write inventory file', error: err.message });
@@ -254,6 +263,7 @@ app.get('*', (req, res) => {
     res.sendFile(path.join(__dirname, '../build', 'index.html'));
 });
 
+// Start the server
 app.listen(PORT, () => {
     console.log(`Server running on http://localhost:${PORT}`);
 });

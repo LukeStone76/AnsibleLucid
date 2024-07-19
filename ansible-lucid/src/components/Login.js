@@ -12,7 +12,7 @@ function Login() {
 
     const handleLogin = async () => {
         try {
-            const response = await axios.post('http://localhost:3000/login', { username, password });
+            const response = await axios.post('http://localhost:3001/login', { username, password });
             if (response.data.message === 'Login successful!') {
                 login(response.data.user);
                 navigate('/');
