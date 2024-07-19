@@ -26,9 +26,12 @@ function App() {
           <IconButton edge="start" color="inherit" aria-label="menu" onClick={toggleDrawer}>
             <MenuIcon />
           </IconButton>
-          <Typography variant="h5" sx={{ fontWeight: 'normal' }} style={{ flexGrow: 1 }}>
-            Ansible Dashboard
-          </Typography>
+          <Box display="flex" alignItems="center" style={{ flexGrow: 1 }}>
+            <Typography variant="h5" sx={{ fontWeight: 'normal' }}>
+              Ansible Lucid
+            </Typography>
+            <img src={`${process.env.PUBLIC_URL}/AnsibleLucidLogo.png`} alt="Logo" style={{ height: 40, marginLeft: 10 }} />
+          </Box>
           {user ? (
               <Button color="inherit" onClick={logout} sx={{ textTransform: 'none',
                 fontSize: '1.125rem',

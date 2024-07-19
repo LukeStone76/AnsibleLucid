@@ -58,7 +58,7 @@ function Inventory() {
             </List>
             <Box sx={{ display: 'flex', gap: 2, alignItems: 'center' }}>
                 <TextField
-                    label="Add a new line"
+                    label="Add host..."
                     value={newLine}
                     onChange={(e) => setNewLine(e.target.value)}
                     fullWidth

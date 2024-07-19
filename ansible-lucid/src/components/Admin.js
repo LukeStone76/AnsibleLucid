@@ -12,7 +12,6 @@ function Admin() {
     const { user } = useAuth();
 
     useEffect(() => {
-        // Fetch all users
         axios.get('http://localhost:3001/api/users')
             .then(response => {
                 setUsers(response.data);
@@ -27,7 +26,6 @@ function Admin() {
             setNewUsername('');
             setNewPassword('');
             setNewAdmin(false);
-            // Refresh user list
             const response = await axios.get('http://localhost:3001/api/users');
             setUsers(response.data);
         } catch (error) {
@@ -39,7 +37,6 @@ function Admin() {
         try {
             await axios.post('http://localhost:3001/api/remove-user', { username: user.username, removeUsername: username });
             alert('User removed successfully');
-            // Refresh user list
             setUsers(users.filter(u => u.username !== username));
         } catch (error) {
             alert(error.response.data);
@@ -77,7 +74,7 @@ function Admin() {
                     <ListItem key={u.username}>
                         <ListItemText 
                             primary={u.username} 
-                            secondary={u.admin ? 'Admin' : ''} // Only show 'Admin' text for admin users
+                            secondary={u.admin ? 'Admin' : ''}
                         />
                         <IconButton edge="end" aria-label="delete" onClick={() => removeUser(u.username)}>
                             <DeleteIcon />

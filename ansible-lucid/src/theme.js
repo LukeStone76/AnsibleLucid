@@ -2,38 +2,32 @@ import { createTheme } from '@mui/material/styles';
 
 const theme = createTheme({
 
-
-
-
   // Main Elements
   palette: {
     primary: {
-      main: '#1976d2', // Customize the primary color
-      light: '#63a4ff', // Optional: Lighter shade for hover effects or lighter UI elements
-      dark: '#004ba0',  // Optional: Darker shade for active states or darker UI elements
-      contrastText: '#fff', // Text color that contrasts well with the primary color
+      main: '#1976d2',
+      light: '#63a4ff',
+      dark: '#004ba0',
+      contrastText: '#fff',
     },
     secondary: {
-      main: '#d32f8f', // Customize the secondary color
-      light: '#ff5cab', // Optional: Lighter shade
-      dark: '#9a0036',  // Optional: Darker shade
-      contrastText: '#fff', // Text color for secondary palette
+      main: '#d32f8f',
+      light: '#ff5cab',
+      dark: '#9a0036',
+      contrastText: '#fff',
     },
     background: {
-      default: '#f0f0f0', // Default background color
-      paper: '#ffffff',   // Background color for paper-like elements (e.g., Cards)
+      default: '#f0f0f0',
+      paper: '#ffffff',
     },
     text: {
-      primary: '#333', // Text color used for primary content
-      secondary: '#666', // Text color used for secondary content
+      primary: '#333',
+      secondary: '#666', 
     }
   },
   typography: {
-    fontFamily: 'Roboto, Arial', // Customize the default font family
+    fontFamily: 'Roboto, Arial',
   },
-
-
-
 
   components: {
 
@@ -41,13 +35,10 @@ const theme = createTheme({
     MuiButton: {
       styleOverrides: {
         root: {
-          borderRadius: 8, // Customize button corner radius
+          borderRadius: 8,
         },
       },
     },
-
-
-
 
     // Tables
     MuiTable: {
@@ -60,12 +51,12 @@ const theme = createTheme({
     MuiTableCell: {
       styleOverrides: {
         root: {
-          padding: '8px', // Customize padding
-          border: '1px solid #ddd', // Add border to cells
+          padding: '8px',
+          border: '1px solid #ddd',
         },
         head: {
-          backgroundColor: '#f5f5f5', // Background color for header cells
-          fontWeight: 'bold', // Make header text bold
+          backgroundColor: '#f5f5f5',
+          fontWeight: 'bold',
         },
       },
     },
@@ -73,37 +64,35 @@ const theme = createTheme({
       styleOverrides: {
         root: {
           '&:nth-of-type(even)': {
-            backgroundColor: '#f9f9f9', // Alternate row color
+            backgroundColor: '#f9f9f9',
           },
         },
       },
     },
 
-
-
     // Text Fields
     MuiTextField: {
         styleOverrides: {
           root: {
-            margin: '8px 0', // Add margin to text fields
-            borderRadius: '8px', // Round the corners
+            margin: '8px 0',
+            borderRadius: '8px',
           },
         },
       },
       MuiInputBase: {
         styleOverrides: {
           root: {
-            backgroundColor: '#f5f5f5', // Background color for text fields
-            borderRadius: '4px', // Round the corners of the input
-            padding: '6px 12px', // Add padding to the input
+            backgroundColor: '#f5f5f5',
+            borderRadius: '4px',
+            padding: '6px 12px',
           },
         },
       },
       MuiInputLabel: {
         styleOverrides: {
           root: {
-            color: '#000000', // Customize the label color
-            fontWeight: 'bold', // Make label bold
+            color: '#000000',
+            fontWeight: 'bold',
           },
         },
       },
@@ -112,19 +101,17 @@ const theme = createTheme({
     MuiList: {
       styleOverrides: {
         root: {
-          backgroundColor: '#ffffff', // Custom background color for lists
-          borderRadius: '4px', // Rounded corners for the list container
-          border: '1px solid #ddd', // Border around the list
-          padding: '8px', // Padding around the list
-          margin: '8px 0', // Margin around the list
+          backgroundColor: '#ffffff',
+          borderRadius: '4px',
+          border: '1px solid #ddd',
+          padding: '8px',
+          margin: '8px 0',
         },
         padding: {
-          padding: '0', // Remove default padding from list items if needed
+          padding: '0',
         },
       },
     },
-
-
 
     },
 });

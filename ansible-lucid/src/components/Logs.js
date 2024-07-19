@@ -30,7 +30,7 @@ function Logs() {
         <Box sx={{ padding: 2 }}>
             <Typography variant="h4" gutterBottom>Job Logs</Typography>
             <TextField
-                label="Search logs"
+                label="Search logs..."
                 value={searchTerm}
                 onChange={e => setSearchTerm(e.target.value)}
                 fullWidth

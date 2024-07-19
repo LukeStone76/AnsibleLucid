@@ -3,17 +3,20 @@ const path = require('path');
 const bodyParser = require('body-parser');
 const childProcess = require('child_process');
 const fs = require('fs');
-const cors = require('cors'); // Require CORS middleware
+const cors = require('cors');
 const app = express();
 const PORT = process.env.PORT || 3001;
 const bcrypt = require('bcryptjs');
 const sqlite3 = require('sqlite3').verbose();
 
-app.use(cors()); // Use CORS middleware to allow all origins
+const settingsPath = process.env.SETTINGS_PATH || 'settings.json';
+
+app.use(cors());
 app.use(bodyParser.json());
 app.use(express.static(path.join(__dirname, '../build')));
-app.use(express.json()); // for parsing application/json
+app.use(express.json());
 
+// Create DB if it doesn't already exist
 const db = new sqlite3.Database('./users.db', (err) => {
     if (err) {
         console.error('Error opening database ' + err.message);
@@ -108,8 +111,7 @@ app.post('/login', (req, res) => {
     });
 });
 
-const settingsPath = process.env.SETTINGS_PATH || 'settings.json';
-
+// Read application settings from local file
 fs.readFile(settingsPath, 'utf8', (err, data) => {
   if (err) {
       console.error('Error loading settings:', err);
@@ -119,6 +121,7 @@ fs.readFile(settingsPath, 'utf8', (err, data) => {
   }
 });
 
+// Endpoint to read playbooks
 app.get('/api/playbooks', (req, res) => {
   const playbookDir = app.locals.settings.playbookDirectory;
   console.log("Directory being accessed: ", playbookDir); // This will log the directory path to check it
@@ -170,7 +173,7 @@ app.post('/api/playbooks/run', (req, res) => {
     });
 });
 
-// Settings: Save and Retrieve
+// Endpoint to save application settings
 app.post('/api/settings', (req, res) => {
     // Ensure all expected settings are present
     const { playbookDirectory, user, logDirectory } = req.body;
@@ -184,6 +187,7 @@ app.post('/api/settings', (req, res) => {
     });
 });
 
+// Endpoint to read application settings
 app.get('/api/settings', (req, res) => {
     fs.readFile('settings.json', (err, data) => {
         if (err) {
@@ -194,6 +198,7 @@ app.get('/api/settings', (req, res) => {
     });
 });
 
+// Endpoint to read logs
 app.get('/api/logs', (req, res) => {
     const logsDir = app.locals.settings.logDirectory; // Use logDirectory from settings
     fs.readdir(logsDir, (err, files) => {
@@ -209,6 +214,7 @@ app.get('/api/logs', (req, res) => {
     });
 });
 
+// Endpoint to read specific log file
 app.get('/logs/:logFile', (req, res) => {
     const logsDir = app.locals.settings.logDirectory; // Use logDirectory from settings
     const logFilePath = path.join(logsDir, req.params.logFile);
