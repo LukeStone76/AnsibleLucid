@@ -37,7 +37,13 @@ function Home() {
 
     const runPlaybook = (playbook) => {
         const { extraVars, limit } = params[playbook];
-        axios.post('http://localhost:3001/api/playbooks/run', { username: user.username, playbook, extraVars, limit })
+        let parsedExtraVars;
+        try {
+            parsedExtraVars = JSON.parse(extraVars);
+        } catch (e) {
+            parsedExtraVars = extraVars;
+        }
+        axios.post('http://localhost:3001/api/playbooks/run', { username: user.username, playbook, extraVars: parsedExtraVars, limit })
             .then(response => {
                 setLogs(`Output for ${playbook}:\n\n${response.data.output}\nErrors: ${response.data.errors}`);
             })

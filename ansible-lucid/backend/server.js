@@ -159,8 +159,8 @@ app.post('/api/playbooks/run', (req, res) => {
 
     let cmd = `ansible-playbook "${playbookPath}"`;
     if (extraVars) {
-        const extraVarsString = JSON.stringify(extraVars);
-        cmd += ` -e '${extraVarsString}'`;
+        const extraVarsString = typeof extraVars === 'string' ? extraVars : JSON.stringify(extraVars);
+        cmd += ` -e ${extraVarsString}`;
     }
     if (limit) {
         cmd += ` -l ${limit}`;
