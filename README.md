@@ -70,3 +70,11 @@ To restart the application:
 - Navigate to the Inventory page
 - Add or remove lines from the inventory file
 - Save changes to update the inventory
+
+**Managing Application Settings:**
+- Navigate to the Settings page
+- Update the following fields as needed:
+  - **Playbook Directory**: Path to the directory containing your Ansible playbooks
+  - **User**: User account that will run the playbooks
+  - **Log Directory**: Path to the directory where log files will be stored
+- Click "Save Settings" to apply the changes
