@@ -1,0 +1,10 @@
+---
+- name: Print Custom Message
+  hosts: localhost
+  vars:
+    custom_message: "Default Message"
+  tasks:
+    - name: Print Custom Message
+      ansible.builtin.debug:
+        msg: "{{ custom_message }}"
+

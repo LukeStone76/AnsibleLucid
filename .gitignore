@@ -4,7 +4,9 @@ node_modules
 .pnp.js
 
 # testing
-coverage
+playwright-report
+test-results
+*.log
 
 # production
 build
