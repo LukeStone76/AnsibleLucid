@@ -71,9 +71,11 @@ function App() {
               <ListItem button component={Link} to="/inventory" onClick={toggleDrawer}>
                 <ListItemText primary="Inventory" />
               </ListItem>
-              <ListItem button component={Link} to="/settings" onClick={toggleDrawer}>
-                <ListItemText primary="Settings" />
-              </ListItem>
+              {user.admin ? (
+                <ListItem button component={Link} to="/settings" onClick={toggleDrawer}>
+                  <ListItemText primary="Settings" />
+                </ListItem>
+              ) : null}
               {user.admin ? (
                 <ListItem button component={Link} to="/admin" onClick={toggleDrawer}>
                   <ListItemText primary="Admin" />
@@ -90,7 +92,7 @@ function App() {
             <Route path="/" element={<Home />} />
             <Route path="/logs" element={<Logs />} />
             <Route path="/inventory" element={<Inventory />} />
-            <Route path="/settings" element={<Settings />} />
+            <Route path="/settings" element={user.admin ? <Settings /> : <Navigate to="/" />} />
             <Route path="/admin" element={user.admin ? <Admin /> : <Navigate to="/" />} />
           </>
         ) : (
