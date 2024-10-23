@@ -177,7 +177,7 @@ app.post('/api/playbooks/run', (req, res) => {
 
         if (err) {
             console.error('Execution Error:', stderr);
-            return res.status(500).json({ message: 'Error executing playbook', error: stderr });
+            return res.json({ message: 'Error executing playbook', output: stdout, errors: stderr });
         }
         res.json({ message: 'Playbook executed successfully', output: stdout, errors: stderr });
     });
