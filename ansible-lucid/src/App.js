@@ -1,6 +1,7 @@
 import React from 'react';
 import { Routes, Route, Link, Navigate } from 'react-router-dom';
 import Home from './components/Home';
+import Templates from './components/Templates';
 import Logs from './components/Logs';
 import Inventory from './components/Inventory';
 import Settings from './components/Settings';
@@ -65,6 +66,9 @@ function App() {
               <ListItem button component={Link} to="/" onClick={toggleDrawer}>
                 <ListItemText primary="Home" />
               </ListItem>
+              <ListItem button component={Link} to="/templates" onClick={toggleDrawer}>
+                <ListItemText primary="Templates" />
+              </ListItem>
               <ListItem button component={Link} to="/logs" onClick={toggleDrawer}>
                 <ListItemText primary="Logs" />
               </ListItem>
@@ -90,6 +94,7 @@ function App() {
         {user ? (
           <>
             <Route path="/" element={<Home />} />
+            <Route path="/templates" element={<Templates />} />
             <Route path="/logs" element={<Logs />} />
             <Route path="/inventory" element={<Inventory />} />
             <Route path="/settings" element={user.admin ? <Settings /> : <Navigate to="/" />} />

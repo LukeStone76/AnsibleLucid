@@ -10,6 +10,7 @@ const bcrypt = require('bcryptjs');
 const sqlite3 = require('sqlite3').verbose();
 
 const settingsPath = process.env.SETTINGS_PATH || 'settings.json';
+const templatesDir = path.join(__dirname, 'templates');
 
 // Middleware setup
 app.use(cors());
@@ -130,6 +131,116 @@ fs.readFile(settingsPath, 'utf8', (err, data) => {
     } else {
         app.locals.settings = JSON.parse(data);
     }
+});
+
+// Ensure the templates directory exists
+if (!fs.existsSync(templatesDir)) {
+    fs.mkdirSync(templatesDir);
+}
+
+// Create a new template
+app.post('/api/templates', (req, res) => {
+    const { name, description, playbook, extraVars, limit } = req.body;
+
+    // Check if all required fields are provided
+    if (!name || !playbook) {
+        return res.status(400).json({ message: 'Missing required fields: name or playbook' });
+    }
+
+    const template = { name, playbook, description, extraVars, limit };
+    const templatePath = path.join(templatesDir, `${name}.json`);
+
+    // Write the template to a JSON file
+    fs.writeFile(templatePath, JSON.stringify(template, null, 2), (err) => {
+        if (err) {
+            console.error('Error creating template file:', err);
+            return res.status(500).json({ message: 'Failed to create template', error: err.message });
+        }
+        res.status(201).json({ message: 'Template created successfully' });
+    });
+});
+
+// Endpoint to run a template
+app.post('/api/templates/run/:name', (req, res) => {
+    const templatePath = path.join(templatesDir, `${req.params.name}.json`);
+    const username = req.body;
+    
+    fs.readFile(templatePath, 'utf8', (err, data) => {
+        if (err) return res.status(404).json({ message: 'Template not found', error: err.message });
+        
+        const { playbook, extraVars, limit } = JSON.parse(data);
+        const playbookPath = path.join(app.locals.settings.playbookDirectory, playbook);
+
+        // Generate a timestamped log file name with the user's name
+        const timestamp = new Date().toISOString().replace(/:/g, '-');
+        const logFilename = `${username}_${playbook.replace(/\.yml$/, '')}_${timestamp}.log`;
+        const logFilePath = path.join(app.locals.settings.logDirectory, logFilename);
+
+        let cmd = `ansible-playbook "${playbookPath}"`;
+        if (extraVars) {
+            const extraVarsString = typeof extraVars === 'string' ? extraVars : JSON.stringify(extraVars);
+            cmd += ` -e ${extraVarsString}`;
+        }
+        if (limit) {
+            cmd += ` -l ${limit}`;
+        }
+
+        const process = childProcess.exec(cmd, { cwd: path.join(app.locals.settings.playbookDirectory, playbook) }, (err, stdout, stderr) => {
+            // Write the output and errors to a log file
+            const logContent = `STDOUT:\n${stdout}\nSTDERR:\n${stderr}`;
+            fs.writeFile(logFilePath, logContent, writeErr => {
+                if (writeErr) {
+                    console.error('Failed to write log file:', writeErr);
+                }
+            });
+
+            if (err) {
+                console.error('Execution Error:', stderr);
+                return res.json({ message: 'Error executing playbook', output: stdout, errors: stderr });
+            }
+            res.json({ message: 'Playbook executed successfully', output: stdout, errors: stderr });
+        });
+    });
+});
+
+// Endpoint to get all templates
+app.get('/api/templates', (req, res) => {
+    fs.readdir(templatesDir, (err, files) => {
+        if (err) return res.status(500).json({ message: 'Failed to load templates', error: err.message });
+
+        const templates = files.map(file => path.parse(file).name);
+        res.json(templates);
+    });
+});
+
+// Endpoint to get a specific template
+app.get('/api/templates/:name', (req, res) => {
+    const templatePath = path.join(templatesDir, `${req.params.name}.json`);
+    fs.readFile(templatePath, 'utf8', (err, data) => {
+        if (err) return res.status(404).json({ message: 'Template not found', error: err.message });
+        res.json(JSON.parse(data));
+    });
+});
+
+// Endpoint to update a template
+app.put('/api/templates/:name', (req, res) => {
+    const { name, description, extraVars, limit } = req.body;
+    const template = { name, description, extraVars, limit };
+    const templatePath = path.join(templatesDir, `${req.params.name}.json`);
+
+    fs.writeFile(templatePath, JSON.stringify(template, null, 2), (err) => {
+        if (err) return res.status(500).json({ message: 'Failed to update template', error: err.message });
+        res.json({ message: 'Template updated successfully' });
+    });
+});
+
+// Endpoint to delete a template
+app.delete('/api/templates/:name', (req, res) => {
+    const templatePath = path.join(templatesDir, `${req.params.name}.json`);
+    fs.unlink(templatePath, (err) => {
+        if (err) return res.status(404).json({ message: 'Template not found', error: err.message });
+        res.json({ message: 'Template deleted successfully' });
+    });
 });
 
 // Endpoint to read playbooks

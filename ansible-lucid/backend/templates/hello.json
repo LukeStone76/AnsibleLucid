@@ -1,0 +1,7 @@
+{
+  "name": "hello",
+  "playbook": "hello_world.yml",
+  "description": "ahhhhh",
+  "extraVars": "",
+  "limit": ""
+}
